@@ -28,6 +28,8 @@ flags.DEFINE_boolean("dryrun", False, "Test without writing to computer.")
 
 flags.DEFINE_string("deckpath", "", "Where to save decklists")
 
+flags.DEFINE_string("browser", "", "Which browser to impersonate for curl_cffi")
+
 
 def main(agrv):
     config = FLAGS.config

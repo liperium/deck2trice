@@ -11,6 +11,7 @@ import requests
 from absl import logging
 from .utils import _pretty_print
 import random
+import curl_cffi
 
 
 @dataclass
@@ -99,7 +100,7 @@ class MoxField:
         )
         # Logging
         # print(f"Grabbing <{self.username}>'s public decks from " + url)
-        r = requests.get(url, headers={'User-Agent': user_agent_list[random.randint(0, len(user_agent_list)-1)]})
+        r = curl_cffi.get(url, impersonate="chrome", headers={'User-Agent': user_agent_list[random.randint(0, len(user_agent_list)-1)]})
         j = json.loads(r.text)
         # printJson(j)
         return j
@@ -108,7 +109,7 @@ class MoxField:
         # https://api.moxfield.com/v2/decks/all/g5uBDBFSe0OzEoC_jRInQw
         url = "https://api.moxfield.com/v2/decks/all/" + deckId
         # print(f"Grabbing decklist <{deckId}>")                        #Logging
-        r = requests.get(url, headers={'User-Agent': user_agent_list[random.randint(0, len(user_agent_list)-1)]})
+        r = curl_cffi.get(url, impersonate="chrome", headers={'User-Agent': user_agent_list[random.randint(0, len(user_agent_list)-1)]})
         jsonGet = json.loads(r.text)
         return jsonGet
 

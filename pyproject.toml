@@ -19,7 +19,8 @@ dependencies = [
     "emoji",
     "ml_collections",
     "tqdm",
-    "pathvalidate"
+    "pathvalidate",
+    "curl_cffi"
 ]
 
 dynamic = ["version"]

@@ -1,3 +1,4 @@
 pathvalidate
 emoji
 ml_collections
+curl_cffi

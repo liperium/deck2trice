@@ -37,6 +37,7 @@ class DeckList:
     sideboard: List[MTGCard] = field(default_factory=lambda: [])
     maybeboard: List[MTGCard] = field(default_factory=lambda: [])
     tokens: List[MTGCard] = field(default_factory=lambda: [])
+    themes: List[str] = field(default_factory=lambda: [])
 
     def to_trice(self, trice_path=Path("decks")):
         trice_path.mkdir(parents=True, exist_ok=True)
@@ -46,8 +47,11 @@ class DeckList:
         to_trice(
             self.mainboard,
             self.sideboard,
-            f"{self.format}-{self.name}",
+            self.name,
             self.description,
+            commanders=self.commanders,
+            deck_format=self.format,
+            themes=self.themes,
             trice_path=trice_path,
         )
 
@@ -61,6 +65,7 @@ class DeckList:
         commanders = to_cards(jsonGet["commanders"])
         companions = to_cards(jsonGet["companions"])
         format = jsonGet["format"]
+        themes = [theme["name"] for theme in jsonGet.get("hubs", [])]
         return DeckList(
             mainboard_list,
             name,
@@ -69,6 +74,7 @@ class DeckList:
             sideboard=sideboard_list,
             commanders=commanders,
             companions=companions,
+            themes=themes,
         )
 
 
@@ -125,6 +131,9 @@ def to_trice(
     sideboard_list: List[MTGCard] = [],
     name="",
     description="",
+    commanders: List[MTGCard] = [],
+    deck_format=None,
+    themes: List[str] = [],
     trice_path=Path("~/.local/share/Cockatrice/Cockatrice/decks"),
 ):
     root = ET.Element("cockatrice_deck")
@@ -133,8 +142,26 @@ def to_trice(
     deckname = ET.SubElement(root, "deckname")
     deckname.text = name
 
+    # Add bannerCard element if there are commanders
+    if commanders:
+        bannercard = ET.SubElement(root, "bannerCard")
+        bannercard.set("providerId", "")
+        bannercard.text = commanders[0].name
+
     comments = ET.SubElement(root, "comments")
     comments.text = description
+
+    # Add tags element for deck format and hubs
+    tags = ET.SubElement(root, "tags")
+    tag = ET.SubElement(tags, "tag")
+    tag.text = "Moxtrice"
+    if deck_format != None:
+        tag = ET.SubElement(tags, "tag")
+        tag.text = deck_format.capitalize()
+    # Add hub tags
+    for theme in themes:
+        tag = ET.SubElement(tags, "tag")
+        tag.text = theme
 
     mainboard = ET.SubElement(root, "zone")
     mainboard.set("name", "main")

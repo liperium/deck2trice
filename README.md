@@ -26,20 +26,32 @@ uv pip install deck2trice
 
 ## Quick Start
 
-Create `~/.deck2trice.yml`:
+### Easy Setup (Recommended)
 
-```yaml
-username: your_username
-source: archidekt  # or moxfield
-fetch_all: true
-deckpath: /path/to/cockatrice/decks
-decks: []
+Run once with your preferences - they'll be saved automatically:
+
+```bash
+deck2trice --source moxfield --username yourname --deckpath /path/to/cockatrice/decks --all_decks
+# or
+deck2trice --source archidekt --username yourname --deckpath /path/to/cockatrice/decks --all_decks
 ```
 
-Then run:
+From then on, just run:
 
 ```bash
 deck2trice
+```
+
+### Manual Setup
+
+Or create `~/.deck2trice.yml` manually:
+
+```yaml
+username: your_username
+source: moxfield  # or 'archidekt'
+fetch_all: true
+deckpath: /path/to/cockatrice/decks
+decks: []
 ```
 
 ## Usage

@@ -8,6 +8,7 @@ def get_config():
     config.decks = []
     config.source = "moxfield"  # Default deck source: 'moxfield' or 'archidekt'
     config.fetch_all = False  # If True, always fetch all decks from user (ignores decks list)
+    config.deckpath = ""  # Default path to save decks (empty uses default)
 
     config_fp = Path.home() / ".moxtrice.yml"
     if config_fp.exists():

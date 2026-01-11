@@ -52,6 +52,7 @@ def main(agrv):
         username = FLAGS.username
         config_decks = []
         config_fetch_all = False
+        config_deckpath = ""
     else:
         config = FLAGS.config
         # Override config with CLI flags if provided
@@ -59,6 +60,7 @@ def main(agrv):
         username = FLAGS.username if FLAGS.username else config.username
         config_decks = config.decks
         config_fetch_all = config.fetch_all
+        config_deckpath = config.deckpath
 
     # Create the appropriate deck source client using factory
     client = create_deck_source(source, username)
@@ -95,6 +97,11 @@ def main(agrv):
             with open(config_fp, "w") as f:
                 f.write(repr(config))
 
+    # Determine deckpath: CLI flag takes priority, then config, then default
+    deckpath = FLAGS.deckpath if FLAGS.deckpath else config_deckpath
+    if deckpath:
+        logging.info(f"Saving decks to: {deckpath}")
+
     jsonGets = []
     with redirect_to_tqdm(tqdm):
         for deck in tqdm(deck_ids, desc=f"Getting data from {source}"):
@@ -106,7 +113,7 @@ def main(agrv):
         if not FLAGS.dryrun:
             for jsonGet in tqdm(jsonGets, desc="Converting deck to trice"):
                 decklist = client.parse_deck(jsonGet)
-                decklist.to_trice(Path(FLAGS.deckpath))
+                decklist.to_trice(Path(deckpath) if deckpath else Path(FLAGS.deckpath))
 
 
 def absl_main():

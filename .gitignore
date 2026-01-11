@@ -5,3 +5,5 @@ __pycache__
 dist
 build
 moxtrice.egg-info
+.venv
+deck2trice.egg-info/

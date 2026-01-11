@@ -307,7 +307,7 @@ def to_trice(
     # Add tags element for deck format and hubs
     tags = ET.SubElement(root, "tags")
     tag = ET.SubElement(tags, "tag")
-    tag.text = "Moxtrice"
+    tag.text = "deck2trice"
     if deck_format != None:
         tag = ET.SubElement(tags, "tag")
         tag.text = deck_format.capitalize()

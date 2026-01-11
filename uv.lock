@@ -1,6 +1,6 @@
 version = 1
 revision = 3
-requires-python = ">=3.12, <4"
+requires-python = ">=3.12"
 
 [[package]]
 name = "absl-py"
@@ -165,6 +165,30 @@ wheels = [
 ]
 
 [[package]]
+name = "deck2trice"
+source = { editable = "." }
+dependencies = [
+    { name = "absl-py" },
+    { name = "curl-cffi" },
+    { name = "emoji" },
+    { name = "ml-collections" },
+    { name = "pathvalidate" },
+    { name = "requests" },
+    { name = "tqdm" },
+]
+
+[package.metadata]
+requires-dist = [
+    { name = "absl-py" },
+    { name = "curl-cffi" },
+    { name = "emoji" },
+    { name = "ml-collections" },
+    { name = "pathvalidate" },
+    { name = "requests" },
+    { name = "tqdm" },
+]
+
+[[package]]
 name = "emoji"
 version = "2.15.0"
 source = { registry = "https://pypi.org/simple" }
@@ -193,28 +217,6 @@ dependencies = [
 sdist = { url = "https://files.pythonhosted.org/packages/b8/f8/1a9ae6696dbb6bc9c44ddf5c5e84710d77fe9a35a57e8a06722e1836a4a6/ml_collections-1.1.0.tar.gz", hash = "sha256:0ac1ac6511b9f1566863e0bb0afad0c64e906ea278ad3f4d2144a55322671f6f", size = 61356, upload-time = "2025-04-17T08:25:02.247Z" }
 wheels = [
     { url = "https://files.pythonhosted.org/packages/ab/8a/18d4ff2c7bd83f30d6924bd4ad97abf418488c3f908dea228d6f0961ad68/ml_collections-1.1.0-py3-none-any.whl", hash = "sha256:23b6fa4772aac1ae745a96044b925a5746145a70734f087eaca6626e92c05cbc", size = 76707, upload-time = "2025-04-17T08:24:59.038Z" },
-]
-
-[[package]]
-name = "moxtrice"
-source = { editable = "." }
-dependencies = [
-    { name = "curl-cffi" },
-    { name = "emoji" },
-    { name = "ml-collections" },
-    { name = "pathvalidate" },
-    { name = "requests" },
-    { name = "tqdm" },
-]
-
-[package.metadata]
-requires-dist = [
-    { name = "curl-cffi" },
-    { name = "emoji" },
-    { name = "ml-collections" },
-    { name = "pathvalidate" },
-    { name = "requests" },
-    { name = "tqdm" },
 ]
 
 [[package]]

@@ -91,7 +91,7 @@ def main(agrv):
 
     # Only create config file if not in no_config mode
     if not FLAGS.no_config:
-        config_fp = Path.home() / ".moxtrice.yml"
+        config_fp = Path.home() / ".deck2trice.yml"
         if not config_fp.exists():
             config.decks = deck_ids
             with open(config_fp, "w") as f:

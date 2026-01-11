@@ -1,4 +1,4 @@
-from moxtrice import MoxField, DeckList, MTGCard
+from deck2trice import MoxField, DeckList, MTGCard
 import yaml
 
 from ml_collections import ConfigDict

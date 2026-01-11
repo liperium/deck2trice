@@ -3,16 +3,20 @@ requires = ["setuptools", "setuptools-scm"]
 build-backend = "setuptools.build_meta"
 
 [project]
-name = "moxtrice"
-authors = [
-    {name = "Xie Zejian", email = "xiezej@gmail.com"},
-]
-description = "A simple tool to synchronize between moxfield.com and cockatrice"
-readme= "README.md"
-license = {file="LICENSE"}
+name = "deck2trice"
+requires-python = ">=3.12"
+authors = [{ name = "Mattys Gervais", email = "mattysgervais@gmail.com" }]
+description = "Multi-source MTG deck converter for Cockatrice. Supports Moxfield, Archidekt, and more."
+readme = "README.md"
+license = { file = "LICENSE" }
+keywords = ["mtg", "magic", "cockatrice", "moxfield", "archidekt", "deck", "converter"]
 classifiers = [
     "Programming Language :: Python :: 3",
-    "License :: OSI Approved :: Apache Software License"
+    "Programming Language :: Python :: 3.12",
+    "License :: OSI Approved :: MIT License",
+    "Development Status :: 4 - Beta",
+    "Intended Audience :: End Users/Desktop",
+    "Topic :: Games/Entertainment :: Board Games",
 ]
 dependencies = [
     "requests",
@@ -20,18 +24,20 @@ dependencies = [
     "ml_collections",
     "tqdm",
     "pathvalidate",
-    "curl_cffi"
+    "curl_cffi",
+    "absl-py",
 ]
 
 dynamic = ["version"]
 
 [project.scripts]
-moxtrice = "moxtrice.main:absl_main"
+deck2trice = "deck2trice.main:absl_main"
 
 [tool.setuptools_scm]
 local_scheme = "no-local-version"
-write_to = "moxtrice/_version.py"
+write_to = "deck2trice/_version.py"
 
 [project.urls]
-"Homepage" = "https://github.com/fecet/moxtrice"
-"Bug Tracker" = "https://github.com/fecet/moxtrice/issues"
+"Homepage" = "https://github.com/liperium/deck2trice"
+"Bug Tracker" = "https://github.com/liperium/deck2trice/issues"
+"Repository" = "https://github.com/liperium/deck2trice"

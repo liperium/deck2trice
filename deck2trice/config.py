@@ -10,7 +10,7 @@ def get_config():
     config.fetch_all = False  # If True, always fetch all decks from user (ignores decks list)
     config.deckpath = ""  # Default path to save decks (empty uses default)
 
-    config_fp = Path.home() / ".moxtrice.yml"
+    config_fp = Path.home() / ".deck2trice.yml"
     if config_fp.exists():
         with open(config_fp,"r") as f:
             conf=yaml.load(f.read(), yaml.UnsafeLoader)

@@ -6,6 +6,7 @@ def get_config():
     config = ConfigDict()
     config.username = "facet"
     config.decks = []
+    config.source = "moxfield"  # Default deck source: 'moxfield' or 'archidekt'
 
     config_fp = Path.home() / ".moxtrice.yml"
     if config_fp.exists():

@@ -2,6 +2,7 @@ from dataclasses import dataclass, field
 import json
 from pathlib import Path
 from typing import *
+from abc import ABC, abstractmethod
 import requests
 import xml.etree.ElementTree as ET
 import emoji
@@ -59,14 +60,25 @@ class DeckList:
         )
 
     @staticmethod
-    def from_json(jsonGet):
+    def from_json(jsonGet, source="moxfield"):
+        """Parse deck data from API response. Source can be 'moxfield' or 'archidekt'."""
+        if source == "moxfield":
+            return DeckList._parse_moxfield(jsonGet)
+        elif source == "archidekt":
+            return DeckList._parse_archidekt(jsonGet)
+        else:
+            raise ValueError(f"Unknown deck source: {source}")
+
+    @staticmethod
+    def _parse_moxfield(jsonGet):
+        """Parse Moxfield API response"""
         name = jsonGet["name"]
         description = jsonGet["description"]
-        mainboard_list = to_cards(jsonGet["mainboard"])
-        sideboard_list = to_cards(jsonGet["sideboard"])
+        mainboard_list = to_cards(jsonGet["mainboard"], source="moxfield")
+        sideboard_list = to_cards(jsonGet["sideboard"], source="moxfield")
         # jsonGet['tokens']
-        commanders = to_cards(jsonGet["commanders"])
-        companions = to_cards(jsonGet["companions"])
+        commanders = to_cards(jsonGet["commanders"], source="moxfield")
+        companions = to_cards(jsonGet["companions"], source="moxfield")
         format = jsonGet["format"]
         themes = [theme["name"] for theme in jsonGet.get("hubs", [])]
         return DeckList(
@@ -77,6 +89,75 @@ class DeckList:
             sideboard=sideboard_list,
             commanders=commanders,
             companions=companions,
+            themes=themes,
+        )
+
+    @staticmethod
+    def _parse_archidekt(jsonGet):
+        """Parse Archidekt API response"""
+        name = jsonGet["name"]
+        description = jsonGet.get("description", "")
+
+        # Format mapping
+        format_map = {
+            3: "commander",
+            1: "standard",
+            2: "modern",
+            # Add more as needed
+        }
+        deck_format = format_map.get(jsonGet.get("deckFormat"), "")
+
+        # Group cards by category
+        cards_by_category = {}
+        for card_entry in jsonGet.get("cards", []):
+            categories = card_entry.get("categories", [])
+            for category in categories:
+                if category not in cards_by_category:
+                    cards_by_category[category] = []
+                cards_by_category[category].append(card_entry)
+
+        # Parse different card zones
+        mainboard_list = []
+        sideboard_list = []
+        commanders = []
+        companions = []
+        maybeboard = []
+        tokens = []
+
+        # Get category metadata
+        category_meta = {cat["name"]: cat for cat in jsonGet.get("categories", [])}
+
+        for category_name, card_entries in cards_by_category.items():
+            cat_info = category_meta.get(category_name, {})
+            is_premier = cat_info.get("isPremier", False)
+            included_in_deck = cat_info.get("includedInDeck", True)
+
+            parsed_cards = to_cards_archidekt(card_entries)
+
+            if category_name.lower() == "commander":
+                commanders.extend(parsed_cards)
+            elif category_name.lower() == "sideboard":
+                sideboard_list.extend(parsed_cards)
+            elif category_name.lower() == "maybeboard":
+                maybeboard.extend(parsed_cards)
+            elif "token" in category_name.lower() and not included_in_deck:
+                tokens.extend(parsed_cards)
+            elif included_in_deck and not is_premier:
+                mainboard_list.extend(parsed_cards)
+
+        # Extract themes from deck tags
+        themes = [tag.get("name", "") for tag in jsonGet.get("deckTags", [])]
+
+        return DeckList(
+            mainboard_list,
+            name,
+            description,
+            deck_format,
+            sideboard=sideboard_list,
+            commanders=commanders,
+            companions=companions,
+            maybeboard=maybeboard,
+            tokens=tokens,
             themes=themes,
         )
 
@@ -96,8 +177,27 @@ user_agent_list = [
 ]
 
 
+class DeckSource(ABC):
+    """Abstract base class for deck source integrations (Moxfield, Archidekt, etc.)"""
+
+    @abstractmethod
+    def getUserDecks(self) -> dict:
+        """Fetch all decks for the configured user. Returns JSON response."""
+        pass
+
+    @abstractmethod
+    def getDecklist(self, deck_id: str) -> dict:
+        """Fetch a specific deck by ID. Returns JSON response."""
+        pass
+
+    @abstractmethod
+    def parse_deck(self, json_data: dict) -> "DeckList":
+        """Parse API response into a DeckList object."""
+        pass
+
+
 @dataclass
-class MoxField:
+class MoxField(DeckSource):
     username: str = ""
 
     # xmageFolderPath = ""
@@ -121,6 +221,56 @@ class MoxField:
         r = curl_cffi.get(url, impersonate="chrome", headers={'User-Agent': user_agent_list[random.randint(0, len(user_agent_list)-1)]})
         jsonGet = json.loads(r.text)
         return jsonGet
+
+    def parse_deck(self, json_data: dict) -> "DeckList":
+        """Parse Moxfield API response into DeckList"""
+        return DeckList.from_json(json_data, source="moxfield")
+
+
+@dataclass
+class Archidekt(DeckSource):
+    username: str = ""
+
+    def getUserDecks(self):
+        """Fetch all public decks for a user from Archidekt"""
+        # Archidekt API endpoint for user's decks
+        url = f"https://archidekt.com/api/decks/cards/?owner={self.username}&pageSize=99999"
+        r = curl_cffi.get(url, impersonate="chrome", headers={'User-Agent': user_agent_list[random.randint(0, len(user_agent_list)-1)]})
+        j = json.loads(r.text)
+        return j
+
+    def getDecklist(self, deck_id: str):
+        """Fetch a specific deck by ID from Archidekt"""
+        url = f"https://archidekt.com/api/decks/{deck_id}/"
+        r = curl_cffi.get(url, impersonate="chrome", headers={'User-Agent': user_agent_list[random.randint(0, len(user_agent_list)-1)]})
+        jsonGet = json.loads(r.text)
+        return jsonGet
+
+    def parse_deck(self, json_data: dict) -> "DeckList":
+        """Parse Archidekt API response into DeckList"""
+        return DeckList.from_json(json_data, source="archidekt")
+
+
+def create_deck_source(source: str, username: str = "") -> DeckSource:
+    """Factory function to create a DeckSource instance based on the source type.
+
+    Args:
+        source: The deck source type ('moxfield' or 'archidekt')
+        username: The username for the deck source
+
+    Returns:
+        A DeckSource instance (MoxField or Archidekt)
+
+    Raises:
+        ValueError: If the source type is unknown
+    """
+    source_lower = source.lower()
+    if source_lower == "moxfield":
+        return MoxField(username=username)
+    elif source_lower == "archidekt":
+        return Archidekt(username=username)
+    else:
+        raise ValueError(f"Unknown deck source: {source}. Supported sources: moxfield, archidekt")
 
 
 def normlize_name(name):
@@ -203,7 +353,8 @@ def to_trice(
     tree.write(fp, encoding="UTF-8", xml_declaration=True)
 
 
-def to_cards(raw_cards: dict) -> List[MTGCard]:
+def to_cards(raw_cards: dict, source="moxfield") -> List[MTGCard]:
+    """Convert raw card data from Moxfield API to MTGCard objects"""
     cards = []
     for name, attr in raw_cards.items():
         # Determine the card name based on layout
@@ -223,6 +374,36 @@ def to_cards(raw_cards: dict) -> List[MTGCard]:
             set_code=set_code,
             collector_number=collector_number,
             uuid=scryfall_id
+        ))
+
+    return cards
+
+
+def to_cards_archidekt(card_entries: List[dict]) -> List[MTGCard]:
+    """Convert raw card data from Archidekt API to MTGCard objects"""
+    cards = []
+    for entry in card_entries:
+        card_data = entry.get("card", {})
+        quantity = entry.get("quantity", 1)
+
+        # Get card name - use oracleCard.name if available, otherwise card.name
+        oracle_card = card_data.get("oracleCard", {})
+        card_name = oracle_card.get("name", card_data.get("name", "Unknown"))
+
+        # Extract set information
+        edition = card_data.get("edition", {})
+        set_code = edition.get("editioncode", "").upper()
+        collector_number = card_data.get("collectorNumber", "")
+
+        # Get UUID from card data
+        card_uuid = card_data.get("uid", "")
+
+        cards.append(MTGCard(
+            name=card_name,
+            quantity=quantity,
+            set_code=set_code,
+            collector_number=collector_number,
+            uuid=card_uuid
         ))
 
     return cards

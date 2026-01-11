@@ -89,13 +89,40 @@ def main(agrv):
 
         logging.info(f"Found {len(deck_ids)} deck(s) for user {username}")
 
-    # Only create config file if not in no_config mode
+    # Save/update config file if not in no_config mode
     if not FLAGS.no_config:
         config_fp = Path.home() / ".deck2trice.yml"
-        if not config_fp.exists():
-            config.decks = deck_ids
+
+        # If config doesn't exist, or if user provided CLI flags, save/update it
+        should_save = not config_fp.exists()
+        if FLAGS.source or FLAGS.username or FLAGS.deckpath:
+            should_save = True
+
+        if should_save:
+            # Update config with CLI flag values if provided
+            if FLAGS.source:
+                config.source = source
+            if FLAGS.username:
+                config.username = username
+            if FLAGS.deckpath:
+                config.deckpath = FLAGS.deckpath
+            if FLAGS.all_decks or not config_decks:
+                config.fetch_all = True
+                config.decks = []
+
+            # Save config
+            import yaml
+            config_dict = {
+                'username': config.username,
+                'source': config.source,
+                'fetch_all': config.fetch_all,
+                'deckpath': config.deckpath if config.deckpath else '',
+                'decks': config.decks
+            }
             with open(config_fp, "w") as f:
-                f.write(repr(config))
+                yaml.dump(config_dict, f, default_flow_style=False)
+
+            logging.info(f"Configuration saved to {config_fp}")
 
     # Determine deckpath: CLI flag takes priority, then config, then default
     deckpath = FLAGS.deckpath if FLAGS.deckpath else config_deckpath

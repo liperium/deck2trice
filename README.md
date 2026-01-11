@@ -38,7 +38,9 @@ deck2trice --source (moxfield|archidekt) --username yourname --deckpath /path/to
 ```
 
 - The path to cockatrice decks is usually :
+
 **Linux** : ~/.local/share/Cockatrice/Cockatrice/decks
+
 **Windows** : "%LOCALAPPDATA%\Cockatrice\Cockatrice\decks
 
 This will get all your public decks on run and parse them to cockatrice with ease!

@@ -2,7 +2,7 @@
 
 Multi-source MTG deck converter for Cockatrice. Import your Magic: The Gathering decks from Moxfield, Archidekt, and other online deck builders into Cockatrice format.
 
-[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
+[![License](https://img.shields.io/badge/License-Apache%202.0-blue.svg)](https://opensource.org/licenses/Apache-2.0)
 [![Python 3.12+](https://img.shields.io/badge/python-3.12+-blue.svg)](https://www.python.org/downloads/)
 
 ## Features
@@ -168,7 +168,7 @@ uv run -m deck2trice.main --source archidekt --username yourname --all_decks
 
 ## License
 
-MIT License - see LICENSE file
+Apache License 2.0 - see LICENSE file for details
 
 ## Credits
 

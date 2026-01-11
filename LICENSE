@@ -186,7 +186,13 @@
       same "printed page" as the copyright notice for easier
       identification within third-party archives.
 
-   Copyright 2023 xie zejian
+   Copyright 2023 Xie Zejian
+   Copyright 2025-2026 Mattys Gervais
+
+   Contributors:
+   - Xie Zejian (fecet) - Original author
+   - Mattys Gervais (liperium) - Multi-source support and architecture improvements
+   - zack (einraz) - Contributions
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.

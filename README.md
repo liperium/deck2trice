@@ -1,6 +1,6 @@
 # deck2trice
 
-Multi-source MTG deck converter for Cockatrice. Import your Magic: The Gathering decks from Moxfield, Archidekt, and other online deck builders into Cockatrice format.
+Multi-source MTG deck converter for Cockatrice. Import your Magic: The Gathering decks from **Moxfield**, **Archidekt**, and other online deck builders into Cockatrice format.* *Please note this has been mostly tested with the **Commander** format.*
 
 [![License](https://img.shields.io/badge/License-Apache%202.0-blue.svg)](https://opensource.org/licenses/Apache-2.0)
 [![Python 3.12+](https://img.shields.io/badge/python-3.12+-blue.svg)](https://www.python.org/downloads/)
@@ -15,13 +15,16 @@ Multi-source MTG deck converter for Cockatrice. Import your Magic: The Gathering
 
 ## Installation
 
+### Pip (environment install)
+
 ```bash
 pip install deck2trice
 ```
 
-Or with uv:
+### UV (single run)
+
 ```bash
-uv pip install deck2trice
+uv run deck2trice (command)
 ```
 
 ## Quick Start
@@ -31,10 +34,14 @@ uv pip install deck2trice
 Run once with your preferences - they'll be saved automatically:
 
 ```bash
-deck2trice --source moxfield --username yourname --deckpath /path/to/cockatrice/decks --all_decks
-# or
-deck2trice --source archidekt --username yourname --deckpath /path/to/cockatrice/decks --all_decks
+deck2trice --source (moxfield|archidekt) --username yourname --deckpath /path/to/decks --all_decks
 ```
+
+- The path to cockatrice decks is usually :
+**Linux** : ~/.local/share/Cockatrice/Cockatrice/decks
+**Windows** : "%LOCALAPPDATA%\Cockatrice\Cockatrice\decks
+
+This will get all your public decks on run and parse them to cockatrice with ease!
 
 From then on, just run:
 
@@ -62,12 +69,6 @@ decks: []
 # Use config file
 deck2trice
 
-# Override config settings
-deck2trice --source moxfield --username yourname --all_decks
-
-# Specify deck path
-deck2trice --deckpath "/path/to/decks"
-
 # One-off import without config file
 deck2trice --no_config --source archidekt --username yourname --all_decks
 
@@ -82,8 +83,8 @@ Create `~/.deck2trice.yml` with these options:
 ```yaml
 username: your_username        # Required: Your deck site username
 source: archidekt              # Required: 'moxfield' or 'archidekt'
-fetch_all: true                # true = all decks, false = specific decks only
 deckpath: /path/to/decks       # Optional: Where to save .cod files
+fetch_all: true                # true = all decks, false = specific decks only
 decks: []                      # Specific deck IDs (when fetch_all: false)
 ```
 
@@ -98,39 +99,6 @@ All flags override config file values:
 - `--no_config` - Bypass config file
 - `--dryrun` - Test without writing files
 - `--version` - Show version
-
-## Workflows
-
-### Auto-Sync All Decks
-
-```yaml
-# ~/.deck2trice.yml
-username: yourname
-source: archidekt
-fetch_all: true
-deckpath: /path/to/cockatrice/decks
-decks: []
-```
-
-Run `deck2trice` anytime to sync all decks.
-
-### Specific Decks Only
-
-```yaml
-username: yourname
-source: moxfield
-fetch_all: false
-deckpath: /path/to/decks
-decks:
-  - deck_id_1
-  - deck_id_2
-```
-
-### One-Off Import
-
-```bash
-deck2trice --no_config --source archidekt --username user --all_decks --deckpath "./decks"
-```
 
 ## Supported Sources
 
@@ -162,21 +130,6 @@ git clone https://github.com/liperium/deck2trice.git
 cd deck2trice
 uv sync
 ```
-
-### Testing
-
-```bash
-uv run deck2trice
-# or
-uv run -m deck2trice.main --source archidekt --username yourname --all_decks
-```
-
-### Adding a New Source
-
-1. Create a class inheriting from `DeckSource` in `deck2trice/core.py`
-2. Implement `getUserDecks()`, `getDecklist()`, and `parse_deck()`
-3. Add to `create_deck_source()` factory function
-4. Submit a PR
 
 ## License
 

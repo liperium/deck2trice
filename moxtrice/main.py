@@ -54,14 +54,14 @@ def main(agrv):
     deck_ids = []
     if username:
         logging.info(f"Getting lists of user {username}..")
-        user_decks = client.getUserDecks()
+        user_decks_response = client.getUserDecks()
 
         # Handle different response formats from different sources
         if source.lower() == "moxfield":
-            deck_ids = [j["publicId"] for j in user_decks["data"]]
+            deck_ids = [j["publicId"] for j in user_decks_response["data"]]
         elif source.lower() == "archidekt":
             # Archidekt returns deck objects directly in 'results'
-            deck_ids = [str(j["id"]) for j in user_decks.get("results", [])]
+            deck_ids = [str(j["id"]) for j in user_decks_response.get("results", [])]
 
     # Add specific decks from config unless --all_decks is specified
     if config.decks and not FLAGS.all_decks:

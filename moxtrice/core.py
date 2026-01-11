@@ -233,8 +233,8 @@ class Archidekt(DeckSource):
 
     def getUserDecks(self):
         """Fetch all public decks for a user from Archidekt"""
-        # Archidekt API endpoint for user's decks
-        url = f"https://archidekt.com/api/decks/cards/?owner={self.username}&pageSize=99999"
+        # Archidekt API v3 endpoint for user's decks
+        url = f"https://archidekt.com/api/decks/v3/?ownerUsername={self.username}&pageSize=99999"
         r = curl_cffi.get(url, impersonate="chrome", headers={'User-Agent': user_agent_list[random.randint(0, len(user_agent_list)-1)]})
         j = json.loads(r.text)
         return j

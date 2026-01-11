@@ -36,24 +36,46 @@ flags.DEFINE_string("username", "", "Username to fetch decks from. Overrides con
 
 flags.DEFINE_boolean("all_decks", False, "Fetch all decks from the user, ignoring the config file's deck list.")
 
+flags.DEFINE_boolean("no_config", False, "Bypass config file reading and creation entirely. Requires --source and --username.")
+
 
 def main(agrv):
-    config = FLAGS.config
-
     if FLAGS.version:
         return print(__version__)
 
-    # Override config with CLI flags if provided
-    source = FLAGS.source if FLAGS.source else config.source
-    username = FLAGS.username if FLAGS.username else config.username
+    # Handle no_config mode
+    if FLAGS.no_config:
+        if not FLAGS.source or not FLAGS.username:
+            logging.error("--no_config requires both --source and --username to be specified")
+            return
+        source = FLAGS.source
+        username = FLAGS.username
+        config_decks = []
+        config_fetch_all = False
+    else:
+        config = FLAGS.config
+        # Override config with CLI flags if provided
+        source = FLAGS.source if FLAGS.source else config.source
+        username = FLAGS.username if FLAGS.username else config.username
+        config_decks = config.decks
+        config_fetch_all = config.fetch_all
 
     # Create the appropriate deck source client using factory
     client = create_deck_source(source, username)
     logging.info(f"Using deck source: {source}")
 
+    # Determine if we should fetch all decks or use specific deck list
+    fetch_all_mode = FLAGS.all_decks or config_fetch_all
+
     deck_ids = []
-    if username:
-        logging.info(f"Getting lists of user {username}..")
+
+    # If we have specific decks in config and not in fetch_all mode, use only those
+    if config_decks and not fetch_all_mode and not FLAGS.no_config:
+        deck_ids = config_decks
+        logging.info(f"Using {len(deck_ids)} deck(s) from config file")
+    # Otherwise, fetch all decks from the user
+    elif username:
+        logging.info(f"Getting all decks for user {username}..")
         user_decks_response = client.getUserDecks()
 
         # Handle different response formats from different sources
@@ -63,15 +85,15 @@ def main(agrv):
             # Archidekt returns deck objects directly in 'results'
             deck_ids = [str(j["id"]) for j in user_decks_response.get("results", [])]
 
-    # Add specific decks from config unless --all_decks is specified
-    if config.decks and not FLAGS.all_decks:
-        deck_ids = list(set(config.decks + deck_ids))
+        logging.info(f"Found {len(deck_ids)} deck(s) for user {username}")
 
-    config_fp = Path.home() / ".moxtrice.yml"
-    if not config_fp.exists():
-        config.decks = deck_ids
-        with open(config_fp, "w") as f:
-            f.write(repr(config))
+    # Only create config file if not in no_config mode
+    if not FLAGS.no_config:
+        config_fp = Path.home() / ".moxtrice.yml"
+        if not config_fp.exists():
+            config.decks = deck_ids
+            with open(config_fp, "w") as f:
+                f.write(repr(config))
 
     jsonGets = []
     with redirect_to_tqdm(tqdm):

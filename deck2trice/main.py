@@ -1,6 +1,7 @@
 # %%
 from pathlib import Path
 import time
+import platform
 from typing import *
 
 from absl import app, flags, logging
@@ -11,22 +12,35 @@ from ._version import __version__
 from .utils import redirect_to_tqdm, relpath
 
 FLAGS = flags.FLAGS
-# card_name_exceptions = {"Brazen Borrower": "Brazen Borrower // Petty Theft"}
+
 config_fp = (Path(__file__).parent / "config.py").resolve()
 config_fp = relpath(config_fp, Path.cwd())
-# print(config_fp)
+
 config_flags.DEFINE_config_file(
     "config",
     str(config_fp),
-    "File path to the training hyperparameter configuration.",
+    "File path to the deck2trice configuration file.",
     lock_config=False,
 )
+
+def get_default_deckpath():
+    """Get OS-specific default path for Cockatrice decks."""
+    system = platform.system()
+    if system == "Windows":
+        # %LOCALAPPDATA%/Cockatrice/Cockatrice/decks
+        localappdata = Path.home() / "AppData" / "Local"
+        return str(localappdata / "Cockatrice" / "Cockatrice" / "decks")
+    else:  # Linux, macOS, etc.
+        # ~/.local/share/Cockatrice/Cockatrice/decks
+        return str(Path.home() / ".local" / "share" / "Cockatrice" / "Cockatrice" / "decks")
+
+flags.DEFINE_boolean("configure", False, "Configure the application for subsequent runs.")
 
 flags.DEFINE_boolean("version", False, "Prints the version of the program and exits.")
 
 flags.DEFINE_boolean("dryrun", False, "Test without writing to computer.")
 
-flags.DEFINE_string("deckpath", "", "Where to save decklists")
+flags.DEFINE_string("deckpath", get_default_deckpath(), "Where to save decklists")
 
 flags.DEFINE_string("browser", "", "Which browser to impersonate for curl_cffi")
 
@@ -39,9 +53,74 @@ flags.DEFINE_boolean("all_decks", False, "Fetch all decks from the user, ignorin
 flags.DEFINE_boolean("no_config", False, "Bypass config file reading and creation entirely. Requires --source and --username.")
 
 
+def configure_interactive():
+    """Interactive configuration setup."""
+    print("deck2trice configuration wizard")
+
+    # Ask for platform/source
+    print("Which deck platform do you use?")
+    print("1. Moxfield")
+    print("2. Archidekt")
+    while True:
+        choice = input("Enter choice (1 or 2): ").strip()
+        if choice == "1":
+            source = "moxfield"
+            break
+        elif choice == "2":
+            source = "archidekt"
+            break
+        else:
+            print("Invalid choice. Please enter 1 or 2.")
+
+    # Ask for username
+    username = input(f"Enter your {source.capitalize()} username: ").strip()
+    while not username:
+        print("Username cannot be empty.")
+        username = input(f"Enter your {source.capitalize()} username: ").strip()
+
+    # Ask for deckpath
+    default_deckpath = get_default_deckpath()
+    print(f"Default deck save location: {default_deckpath}")
+    custom_deckpath = input("Press Enter to use default, or enter a custom path: ").strip()
+    deckpath = custom_deckpath if custom_deckpath else default_deckpath
+
+    # Ask if they want to sync all decks
+    while True:
+        sync_all = input("\nDo you want to sync all your decks? (Y/n): ").strip().lower()
+        if sync_all in ['n', 'no']:
+            fetch_all = False
+            print("Please configure the deck ids in the configuration file afterwards")
+            break
+        fetch_all = True
+        break
+
+    # Save configuration
+    config_fp = Path.home() / ".deck2trice.yml"
+    import yaml
+    config_dict = {
+        'source': source,
+        'username': username,
+        'deckpath': deckpath,
+        'fetch_all': fetch_all,
+        'decks': []
+    }
+
+    with open(config_fp, "w") as f:
+        yaml.dump(config_dict, f, default_flow_style=False)
+
+    print(f"\n✓ Configuration saved to {config_fp}")
+    print("\nConfiguration complete! Run deck2trice again to sync your decks:")
+    print("  deck2trice")
+    print("\nUse --help to see available command-line options.")
+
 def main(agrv):
     if FLAGS.version:
         return print(__version__)
+
+    # Handle configure mode - exits after configuration
+    if FLAGS.configure:
+        configure_interactive()
+        return
 
     # Handle no_config mode
     if FLAGS.no_config:

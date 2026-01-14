@@ -31,11 +31,17 @@ dependencies = [
 dynamic = ["version"]
 
 [project.scripts]
-deck2trice = "deck2trice.main:absl_main"
+deck2trice = "deck2trice.main:main"
+deck2trice-gui = "deck2trice.gui:main"
 
 [tool.setuptools_scm]
 local_scheme = "no-local-version"
 write_to = "deck2trice/_version.py"
+
+[dependency-groups]
+dev = [
+    "pyinstaller>=6.17.0",
+]
 
 [project.urls]
 "Homepage" = "https://github.com/liperium/deck2trice"

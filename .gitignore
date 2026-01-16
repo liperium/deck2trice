@@ -7,3 +7,4 @@ build
 .venv
 deck2trice.egg-info/
 deck2trice/_version.py
+deck2trice-gui.spec

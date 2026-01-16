@@ -1,7 +1,9 @@
 """Build script for creating deck2trice-gui executable."""
+
 import subprocess
 import sys
 from pathlib import Path
+
 
 def build_exe():
     """Build the GUI executable using PyInstaller."""
@@ -10,12 +12,14 @@ def build_exe():
     # Build command - use python -m to ensure proper execution
     cmd = [
         sys.executable,
-        "-m", "PyInstaller",
-        "--onefile",           # Single executable file
-        "--windowed",          # No console window
-        "--name", "deck2trice-gui",
-        "--clean",             # Clean build cache
-        "deck2trice/gui.py"
+        "-m",
+        "PyInstaller",
+        "--onefile",
+        "--windowed",
+        "--name",
+        "deck2trice-gui",
+        "--clean",
+        "gui_launcher.py",  # Use wrapper script to avoid relative import issues
     ]
 
     print(f"Running: {' '.join(cmd)}")
@@ -30,6 +34,7 @@ def build_exe():
             print("\n✗ Build completed but executable not found")
     else:
         print("\n✗ Build failed")
+
 
 if __name__ == "__main__":
     build_exe()

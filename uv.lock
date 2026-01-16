@@ -166,6 +166,7 @@ wheels = [
 
 [[package]]
 name = "deck2trice"
+version = "1.0.0"
 source = { editable = "." }
 dependencies = [
     { name = "absl-py" },

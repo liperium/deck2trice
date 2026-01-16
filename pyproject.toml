@@ -9,7 +9,15 @@ authors = [{ name = "Mattys Gervais", email = "mattysgervais@gmail.com" }]
 description = "Multi-source MTG deck converter for Cockatrice. Supports Moxfield, Archidekt, and more."
 readme = "README.md"
 license = { file = "LICENSE" }
-keywords = ["mtg", "magic", "cockatrice", "moxfield", "archidekt", "deck", "converter"]
+keywords = [
+    "mtg",
+    "magic",
+    "cockatrice",
+    "moxfield",
+    "archidekt",
+    "deck",
+    "converter",
+]
 classifiers = [
     "Programming Language :: Python :: 3",
     "Programming Language :: Python :: 3.12",
@@ -28,8 +36,7 @@ dependencies = [
     "absl-py",
 ]
 
-dynamic = ["version"]
-
+version = "1.0.0"
 [project.scripts]
 deck2trice = "deck2trice.main:absl_main"
 

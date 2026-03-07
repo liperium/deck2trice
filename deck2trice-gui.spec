@@ -2,7 +2,7 @@
 
 
 a = Analysis(
-    ['deck2trice\\gui.py'],
+    ['gui_launcher.py'],
     pathex=[],
     binaries=[],
     datas=[],
